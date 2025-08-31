@@ -181,7 +181,7 @@ print(f"Churn:  {probabilities[2]:.1%}")
 ---
 
 ## Project Structure 📁
-
+```
 churn-prediction/
 ├── data/
 │   └── churn_data.csv
@@ -196,7 +196,7 @@ churn-prediction/
 │   └── scaler.pkl
 ├── requirements.txt
 └── README.md
-
+```
 ---
 
 ## Teknik Bağımlılıklar
