@@ -39,7 +39,6 @@ Toplamda **16 davranışsal özellik** kullanılır:
 | `NPS_Score` | Net Promoter Score (0-10) |
 | `cart_abandon_rate` | Sepet terk oranı (0-1) |
 | `total_purchase_count` | Toplam satın alma sayısı |
-| `EmailOpenRate` | E-posta açılma oranı (0-1) |
 | `personalized_recommendation_click_rate` | Tavsiye tıklama oranı (0-1) |
 | `logins_last_year` | Son 1 yılda giriş sayısı |
 | `tenure_months` | Müşteri olma süresi (ay) |
@@ -66,23 +65,61 @@ Toplamda **16 davranışsal özellik** kullanılır:
 → Dengeli dağılım ile overfit önlenmiş
 
 
+### 1.2 Feature Engineering(Özellik Çıkarma)
+
+Müşteri davranışında zaman (days) churn (terk) riskini belirleyen en kritik faktörlerden biridir. Ancak bu ilişki doğrusal değildir:
+İlk günlerde risk çok hızlı artar,
+
+Zaman geçtikçe artış yavaşlar ve doygunluğa ulaşır.
+Bu nedenle **time_since_last_purchase** ve **time_since_last_visit** özelliklerinde gün bilgisini doğrudan kullanmak yerine logaritmik bir dönüşüm uygulanmıştır.
+
+
+    Zamanı (gün cinsinden) logaritmik bir churn risk skoruna çevirir.
+
+    Formül:
+   ```python
+        score = 100 * (1 - exp(-days / tau))
+
+    - tau = 400 → riskin artış hızını kontrol eder.
+    - days      → müşteriyle etkileşimden sonra geçen gün sayısı.
+    - capped_days = min(days, 1100) → maksimum 3 yıl ile sınırlandırılmıştır.
+    - Çıktı 0–100 arası normalize edilmiştir.
+    
+    tau = 400  
+    capped_days = min(days, 1100)  
+    score = 100 * (1 - np.exp(-capped_days / tau))
+    return round(score, 2)
+   ```
+
+
+| Gün (days) | Skor |
+| ---------- | ---- |
+| 30         | ~7  |
+| 90         | ~20 |
+| 180        | ~37 |
+| 365        | ~61 |
+| 730        | ~86 |
+| 1100       | ~94 |
+
+---
+
 ### 2. Özellik Önem Sıralaması (Feature Importance)
-![Özellik Önemi](visualizations/rfimp2.png)
+![Özellik Önemi](visualizations/outputrfm4.png)
 
 ### 🔍 En Etkili  Özellikler
-1. **time_since_last_visit** → 11.8% model etkisi  
-   - Son ziyaret süresi uzadıkça churn riski artıyor
-2. **time_since_last_purchase** → 11.5% model etkisi  
+1. **time_since_last_purchase** → 10.3% model etkisi  
    - Son satın alma üzerinden geçen gün arttıkça churn olasılığı yükseliyor
-3. **wishlist_additions** → 11.3% model etkisi  
-   - İstek listesine eklenen ürün sayısı yüksekse, aktif ilgiyi göstermeyebilir, risk artıyor
-4. **avg_cart_value** → 11.2% model etkisi  
+2. **cart_abandon_rate** → 9.2% model etkisi  
+Müşterilerin ürünleri sepete ekleyip, alışverişi tamamlamadan çıkma oranını ölçer.
+3. **avg_cart_value** → 9.1% model etkisi  
    - Ortalama sepet değeri düşük veya düzensizse churn olasılığı yükseliyor
-5. **logins_last_year** → 11.2% model etkisi  
-   - Son 1 yıldaki giriş sayısı azaldıkça churn riski artıyor
+4. **time_since_last_visit** → 9% model etkisi  
+   - Son ziyaret süresi uzadıkça churn riski artıyor
+5. **total_purchase_count** → 7.4% model etkisi  
+   - Toplam alışveriş sayısı azaldıkça churn riski artıyor
 
 
-> 🔹 En önemli 5 özellik toplamda %60'ı geçmiyor → **dominant olmayan, dengeli model**
+> 🔹 En önemli 5 özellik toplamda %50'yi geçmiyor → **dominant olmayan, dengeli model**
 
 ---
 
@@ -95,7 +132,7 @@ Toplamda **16 davranışsal özellik** kullanılır:
 - **Risk müşterileri**: Orta seviye sinyaller → model bu grubu çok iyi ayırt ediyor
 
 ### 4. Korelasyon Matrisi
-![Korelasyon](visualizations/corr.png)
+![Korelasyon](visualizations/corr3.png)
 
 - **Hiçbir özellik çifti arasında yüksek korelasyon yok** (<0.5)  
 - **Multicollinearity problemi yok**  
@@ -104,23 +141,31 @@ Toplamda **16 davranışsal özellik** kullanılır:
 ---
 
 ### 5. Karmaşıklık Matrisi (Confusion Matrix)
-![Karmaşıklık Matrisi](visualizations/conf.png)
+![Karmaşıklık Matrisi](visualizations/corr2.png)
 
 - **Sadık → Churn** yanlış sınıflandırma oranı çok düşük  
-- **Risk sınıfı** iyi tahmin ediliyor (%91 recall)  
+- **Risk sınıfı** iyi tahmin ediliyor (%92.2 recall)  
 - Toplamda **sadece %4.5 hata oranı**
 
 ---
 
 
 ### 📋 Başarı Metrikleri :
+  📊 MODEL PERFORMANSI:
+Train Accuracy: 0.947
+Test Accuracy: 0.946
+Overfitting Farkı: 0.001
+Overfitting kontrolü MÜKEMMEL!
+
+Classification Report:
               precision    recall  f1-score   support
 
-       Sadık      0.941     0.973     0.957    624074
-        Risk      0.954     0.913     0.933    642831
-       Churn      0.971     0.981     0.976    623095
+       Sadık       0.95      0.96      0.95    693522
+        Risk       0.93      0.92      0.92    713598
+       Churn       0.96      0.96      0.96    692880
 
-    accuracy                          0.955   1890000
+    accuracy                           0.95   2100000
+   
 
 
 
@@ -129,10 +174,10 @@ Toplamda **16 davranışsal özellik** kullanılır:
 ### Başarı Özeti
 | Metrik | Skor |
 |-------|------|
-| **Doğruluk (Accuracy)** | %95.5 |
+| **Doğruluk (Accuracy)** | %95.2 |
 | **Precision (makro)** | %94.6 |
-| **Recall (makro)** | %95.2 |
-| **F1-Score (makro)** | %95.5 |
+| **Recall (makro)** | %92.2 |
+| **F1-Score (makro)** | %96.5 |
 | **Sınıf Dengesi** | Dengeli (her sınıf ~6.3M) |
 
 > ✅ Model, **tüm sınıflarda yüksek ve dengeli performans** sergiliyor  
