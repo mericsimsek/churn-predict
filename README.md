@@ -24,7 +24,7 @@ Model, **Sadık**, **Risk** ve **Churn** olmak üzere **üç farklı müşteri s
 ## Veri Seti Özeti 📑
 
 Veri seti, **100 milyondan fazla veriden** oluşan dengeli bir veri setini içerir.  
-Toplamda **16 davranışsal özellik** kullanılır:
+Toplamda **15 davranışsal özellik** kullanılır:
 
 | Özellik | Açıklama |
 |--------|---------|
@@ -144,7 +144,7 @@ Müşterilerin ürünleri sepete ekleyip, alışverişi tamamlamadan çıkma ora
 ![Karmaşıklık Matrisi](visualizations/corr2.png)
 
 - **Sadık → Churn** yanlış sınıflandırma oranı çok düşük  
-- **Risk sınıfı** iyi tahmin ediliyor (%92.2 recall)  
+- **Risk sınıfı** iyi tahmin ediliyor (%93.2 recall)  
 - Toplamda **sadece %4.5 hata oranı**
 
 ---
@@ -158,6 +158,7 @@ Overfitting Farkı: 0.001
 Overfitting kontrolü MÜKEMMEL!
 
 Classification Report:
+
               precision    recall  f1-score   support
 
        Sadık       0.95      0.96      0.95    693522
@@ -176,7 +177,7 @@ Classification Report:
 |-------|------|
 | **Doğruluk (Accuracy)** | %95.2 |
 | **Precision (makro)** | %94.6 |
-| **Recall (makro)** | %92.2 |
+| **Recall (makro)** | %93.2 |
 | **F1-Score (makro)** | %96.5 |
 | **Sınıf Dengesi** | Dengeli (her sınıf ~6.3M) |
 
