@@ -152,10 +152,11 @@ Müşterilerin ürünleri sepete ekleyip, alışverişi tamamlamadan çıkma ora
 
 ### 📋 Başarı Metrikleri :
   📊 MODEL PERFORMANSI:
-Train Accuracy: 0.947
-Test Accuracy: 0.946
-Overfitting Farkı: 0.001
-Overfitting kontrolü MÜKEMMEL!
+
+-**Train Accuracy**: 0.947
+-**Test Accuracy**: 0.946
+-**Overfitting Farkı**: 0.001
+-**Overfitting kontrolü MÜKEMMEL!**
 
 Classification Report:
 
